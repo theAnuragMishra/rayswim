@@ -21,11 +21,10 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Vec3 {
     }
 
     if let Some(hit) = scene.hit(ray, 0.001, f64::INFINITY) {
-        let target_dir = reflect(ray.direction.normalized(), hit.normal);
-        let reflected_ray = Ray::new(hit.point, target_dir);
-        return ray_color(&reflected_ray, scene, depth - 1) * 0.5; // simple reflection
+        let scatter_direction = hit.normal + Vec3::random_in_unit_sphere();
+        let scattered = Ray::new(hit.point, scatter_direction);
+        return ray_color(&scattered, scene, depth - 1);
     }
-
     // background gradient
     let unit_direction = ray.direction.normalized();
     let t = 0.5 * (unit_direction.y + 1.0);
@@ -53,7 +52,7 @@ fn main() {
             let v = (image_height - 1 - j) as f64 / (image_height - 1) as f64;
             let direction = lower_left_corner + horizontal * u + vertical * v - origin;
             let r = Ray::new(origin, direction);
-            let max_depth = 5; // max recursive bounces
+            let max_depth = 50; // max recursive bounces
             let color = ray_color(&r, &scene, max_depth);
             img.set_pixel(i, j, color);
         }
@@ -62,3 +61,4 @@ fn main() {
     img.write_ppm("output.ppm");
     println!("Rendered output.ppm");
 }
+
