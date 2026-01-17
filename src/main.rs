@@ -11,14 +11,27 @@ use ray::ray::Ray;
 use scene::hittable::Hittable;
 use scene::scene::Scene;
 
-fn ray_color(ray: &Ray, scene: &Scene) -> Vec3 {
-    if let Some(hit) = scene.hit(ray, 0.001, f64::INFINITY) {
-        return (hit.normal + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - n * 2.0 * v.dot(n)
+}
+
+fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Vec3 {
+    if depth == 0 {
+        return Vec3::new(0.0, 0.0, 0.0); // max recursion reached
     }
+
+    if let Some(hit) = scene.hit(ray, 0.001, f64::INFINITY) {
+        let target_dir = reflect(ray.direction.normalized(), hit.normal);
+        let reflected_ray = Ray::new(hit.point, target_dir);
+        return ray_color(&reflected_ray, scene, depth - 1) * 0.5; // simple reflection
+    }
+
+    // background gradient
     let unit_direction = ray.direction.normalized();
     let t = 0.5 * (unit_direction.y + 1.0);
     Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
+
 fn main() {
     use std::sync::Arc;
     let mut scene = Scene::new();
@@ -40,7 +53,8 @@ fn main() {
             let v = (image_height - 1 - j) as f64 / (image_height - 1) as f64;
             let direction = lower_left_corner + horizontal * u + vertical * v - origin;
             let r = Ray::new(origin, direction);
-            let color = ray_color(&r, &scene);
+            let max_depth = 5; // max recursive bounces
+            let color = ray_color(&r, &scene, max_depth);
             img.set_pixel(i, j, color);
         }
     }
@@ -48,4 +62,3 @@ fn main() {
     img.write_ppm("output.ppm");
     println!("Rendered output.ppm");
 }
-
