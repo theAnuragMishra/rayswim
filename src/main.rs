@@ -7,6 +7,7 @@ mod scene;
 use geometry::sphere::Sphere;
 use image::buffer::ImageBuffer;
 use math::vec3::Vec3;
+use rand::Rng;
 use ray::ray::Ray;
 use scene::hittable::Hittable;
 use scene::scene::Scene;
@@ -45,16 +46,29 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
+    let mut rng = rand::rng();
 
     for j in 0..image_height {
         for i in 0..image_width {
-            let u = i as f64 / (image_width - 1) as f64;
-            let v = (image_height - 1 - j) as f64 / (image_height - 1) as f64;
-            let direction = lower_left_corner + horizontal * u + vertical * v - origin;
-            let r = Ray::new(origin, direction);
-            let max_depth = 50; // max recursive bounces
-            let color = ray_color(&r, &scene, max_depth);
-            img.set_pixel(i, j, color);
+            let samples_per_pixel = 50;
+            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
+            for _ in 0..samples_per_pixel {
+                let u = (i as f64 + rng.random_range(0.0..1.0)) / (image_width - 1) as f64;
+                let v = ((image_height - 1 - j) as f64 + rng.random_range(0.0..1.0))
+                    / (image_height - 1) as f64;
+                let direction = lower_left_corner + horizontal * u + vertical * v - origin;
+                let r = Ray::new(origin, direction);
+                let max_depth = 50; // max recursive bounces
+                let color = ray_color(&r, &scene, max_depth);
+                pixel_color = pixel_color + color;
+            }
+            // average and gamma correct
+            let scale = 1.0 / samples_per_pixel as f64;
+            let r = (pixel_color.x * scale).sqrt();
+            let g = (pixel_color.y * scale).sqrt();
+            let b = (pixel_color.z * scale).sqrt();
+
+            img.set_pixel(i, j, Vec3::new(r, g, b));
         }
     }
 
