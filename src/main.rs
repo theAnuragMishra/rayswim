@@ -9,34 +9,17 @@ use image::buffer::ImageBuffer;
 use math::vec3::Vec3;
 use rand::Rng;
 use ray::ray::Ray;
-use scene::hittable::Hittable;
-use scene::scene::Scene;
+use scene::hittable_list::HittableList;
 
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * v.dot(n)
 }
 
-fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Vec3 {
-    if depth == 0 {
-        return Vec3::new(0.0, 0.0, 0.0); // max recursion reached
-    }
-
-    if let Some(hit) = scene.hit(ray, 0.001, f64::INFINITY) {
-        let scatter_direction = hit.normal + Vec3::random_in_unit_sphere();
-        let scattered = Ray::new(hit.point, scatter_direction);
-        return ray_color(&scattered, scene, depth - 1);
-    }
-    // background gradient
-    let unit_direction = ray.direction.normalized();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
-}
-
 fn main() {
-    use std::sync::Arc;
-    let mut scene = Scene::new();
-    scene.add(Arc::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    scene.add(Arc::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0))); // ground sphere
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
     let image_width = 400;
     let image_height = 200;
     let mut img = ImageBuffer::new(image_width, image_height);
@@ -59,7 +42,7 @@ fn main() {
                 let direction = lower_left_corner + horizontal * u + vertical * v - origin;
                 let r = Ray::new(origin, direction);
                 let max_depth = 50; // max recursive bounces
-                let color = ray_color(&r, &scene, max_depth);
+                let color = crate::ray::ray::color(&r, &world, max_depth);
                 pixel_color = pixel_color + color;
             }
             // average and gamma correct
@@ -75,4 +58,3 @@ fn main() {
     img.write_ppm("output.ppm");
     println!("Rendered output.ppm");
 }
-

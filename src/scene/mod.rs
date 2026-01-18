@@ -1,2 +1,2 @@
 pub mod hittable;
-pub mod scene;
+pub mod hittable_list;
