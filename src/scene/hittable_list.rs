@@ -17,12 +17,7 @@ impl HittableList {
 
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        let mut temp_rec = HitRecord {
-            point: Default::default(),
-            normal: Default::default(),
-            t: 0.0,
-            front_face: false,
-        };
+        let mut temp_rec = HitRecord::default();
 
         let mut hit_anything = false;
         let mut closest = t_max;

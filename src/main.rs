@@ -4,12 +4,16 @@ mod math;
 mod ray;
 mod scene;
 
+use std::sync::Arc;
+
 use geometry::sphere::Sphere;
 use image::buffer::ImageBuffer;
 use math::vec3::Vec3;
 use rand::Rng;
 use ray::ray::Ray;
 use scene::hittable_list::HittableList;
+
+use crate::scene::material::lambertian::Lambertian;
 
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * v.dot(n)
@@ -18,8 +22,23 @@ fn reflect(v: Vec3, n: Vec3) -> Vec3 {
 fn main() {
     let mut world = HittableList::new();
 
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+    let material_ground = Arc::new(Lambertian {
+        albedo: Vec3::new(0.8, 0.8, 0.0),
+    });
+    let material_center = Arc::new(Lambertian {
+        albedo: Vec3::new(0.1, 0.2, 0.5),
+    });
+
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center.clone(),
+    )));
     let image_width = 400;
     let image_height = 200;
     let mut img = ImageBuffer::new(image_width, image_height);

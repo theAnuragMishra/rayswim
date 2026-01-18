@@ -1,8 +1,10 @@
 use crate::math::vec3::Vec3;
 use crate::scene::hittable::{HitRecord, Hittable};
 use crate::scene::hittable_list::HittableList;
+use crate::scene::material::Material;
+use crate::scene::material::lambertian::Lambertian;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
@@ -27,17 +29,17 @@ pub fn color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
         return Vec3::default();
     }
 
-    let mut rec = HitRecord {
-        point: Vec3::default(),
-        normal: Vec3::default(),
-        t: 0.0,
-        front_face: false,
-    };
-
+    let mut rec = HitRecord::default();
     if world.hit(r, 0.001, f64::INFINITY, &mut rec) {
-        // Lambertian diffuse
-        let target = rec.point + rec.normal + Vec3::random_in_unit_sphere();
-        return color(&Ray::new(rec.point, target - rec.point), world, depth - 1) * 0.5;
+        let mut scattered = Ray::default();
+        let mut attenuation = Vec3::default();
+        if rec
+            .material
+            .scatter(r, &rec, &mut attenuation, &mut scattered)
+        {
+            return attenuation * color(&scattered, world, depth - 1);
+        }
+        return Vec3::default();
     }
 
     // background
