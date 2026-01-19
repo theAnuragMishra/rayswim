@@ -1,4 +1,5 @@
 pub mod lambertian;
+pub mod metal;
 
 use crate::math::vec3::Vec3;
 use crate::ray::ray::Ray;

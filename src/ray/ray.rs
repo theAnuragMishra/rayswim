@@ -20,10 +20,6 @@ impl Ray {
     }
 }
 
-fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    v - n * 2.0 * v.dot(n)
-}
-
 pub fn color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::default();

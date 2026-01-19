@@ -13,7 +13,7 @@ use rand::Rng;
 use ray::ray::Ray;
 use scene::hittable_list::HittableList;
 
-use crate::scene::material::lambertian::Lambertian;
+use crate::scene::material::{lambertian::Lambertian, metal::Metal};
 
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * v.dot(n)
@@ -26,8 +26,11 @@ fn main() {
         albedo: Vec3::new(0.8, 0.8, 0.0),
     });
     let material_center = Arc::new(Lambertian {
-        albedo: Vec3::new(0.1, 0.2, 0.5),
+        albedo: Vec3::new(0.8, 0.3, 0.3),
     });
+
+    let material_metal = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.0));
+    let material_metal_fuzzy = Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3));
 
     world.add(Box::new(Sphere::new(
         Vec3::new(0.0, -100.5, -1.0),
@@ -38,6 +41,16 @@ fn main() {
         Vec3::new(0.0, 0.0, -1.0),
         0.5,
         material_center.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_metal.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_metal_fuzzy.clone(),
     )));
     let image_width = 400;
     let image_height = 200;

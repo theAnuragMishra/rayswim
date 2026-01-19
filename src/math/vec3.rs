@@ -50,6 +50,9 @@ impl Vec3 {
             }
         }
     }
+    pub fn reflect(&self, n: Vec3) -> Vec3 {
+        *self - n * 2.0 * self.dot(n)
+    }
 }
 
 use std::ops::{Add, Div, Mul, Neg, Sub};
