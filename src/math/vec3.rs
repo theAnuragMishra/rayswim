@@ -37,12 +37,11 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere() -> Vec3 {
-        let mut rng = rand::rng();
         loop {
             let p = Vec3::new(
-                rng.random_range(-1.0..1.0),
-                rng.random_range(-1.0..1.0),
-                rng.random_range(-1.0..1.0),
+                rand::random_range(-1.0..1.0),
+                rand::random_range(-1.0..1.0),
+                rand::random_range(-1.0..1.0),
             );
 
             if p.length() * p.length() < 1.0 {
@@ -56,8 +55,6 @@ impl Vec3 {
 }
 
 use std::ops::{Add, Div, Mul, Neg, Sub};
-
-use rand::Rng;
 
 impl Add for Vec3 {
     type Output = Vec3;
