@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use rand;
 
 use crate::{
@@ -57,6 +59,8 @@ impl Camera {
     pub fn render(&mut self, world: &dyn Hittable) {
         let mut img = ImageBuffer::new(self.image_width, self.image_height);
         for j in 0..self.image_height {
+            print!("\rScanlines remaining: {} ", self.image_height - j);
+            io::stdout().flush().unwrap();
             for i in 0..self.image_width {
                 let mut pixel_color = Vec3::default();
                 for _ in 0..self.samples_per_pixel {
@@ -68,7 +72,7 @@ impl Camera {
         }
 
         img.write_ppm("output.ppm");
-        println!("Rendered output.ppm");
+        print!("\rRendered output.ppm!             \n");
     }
 
     fn get_ray(&self, i: f64, j: f64) -> Ray {
