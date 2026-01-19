@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::math::vec3::Vec3;
-use crate::ray::ray::Ray;
+use crate::ray::Ray;
 use crate::scene::hittable::{HitRecord, Hittable};
 use crate::scene::material::Material;
 

@@ -1,4 +1,4 @@
-use crate::ray::ray::Ray;
+use crate::ray::Ray;
 use crate::scene::hittable::{HitRecord, Hittable};
 
 pub struct HittableList {

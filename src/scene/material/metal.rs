@@ -1,6 +1,6 @@
 use crate::{
     math::vec3::Vec3,
-    ray::ray::Ray,
+    ray::Ray,
     scene::{hittable::HitRecord, material::Material},
 };
 pub struct Metal {
