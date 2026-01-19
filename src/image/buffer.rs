@@ -31,9 +31,9 @@ impl ImageBuffer {
         for y in 0..self.height {
             for x in 0..self.width {
                 let color = self.pixels[y * self.width + x];
-                let r = (255.99 * color.x) as u8;
-                let g = (255.99 * color.y) as u8;
-                let b = (255.99 * color.z) as u8;
+                let r = (256.0 * color.x.clamp(0.0, 0.99)) as u8;
+                let g = (256.0 * color.y.clamp(0.0, 0.99)) as u8;
+                let b = (256.0 * color.z.clamp(0.0, 0.99)) as u8;
                 write!(file, "{} {} {} ", r, g, b).unwrap();
             }
             write!(file, "\n").unwrap();
