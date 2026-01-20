@@ -22,12 +22,12 @@ impl Vec3 {
         }
     }
 
-    pub fn length(self) -> f64 {
-        self.dot(self).sqrt()
+    pub fn length_squared(self) -> f64 {
+        self.dot(self)
     }
 
     pub fn normalized(self) -> Vec3 {
-        let len = self.length();
+        let len = self.length_squared().sqrt();
         if len < 1e-12 {
             // avoid divide-by-zero
             self // returning unnormalized is safer than NaNs
@@ -36,7 +36,7 @@ impl Vec3 {
         }
     }
 
-    pub fn random_in_unit_sphere() -> Vec3 {
+    pub fn random_unit_vector() -> Vec3 {
         loop {
             let p = Vec3::new(
                 rand::random_range(-1.0..1.0),
@@ -44,11 +44,21 @@ impl Vec3 {
                 rand::random_range(-1.0..1.0),
             );
 
-            if p.length() * p.length() < 1.0 {
-                return p;
+            if p.length_squared() < 1.0 {
+                return p.normalized();
             }
         }
     }
+
+    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+        if on_unit_sphere.dot(normal) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
+    }
+
     pub fn reflect(&self, n: Vec3) -> Vec3 {
         *self - n * 2.0 * self.dot(n)
     }
