@@ -1,17 +1,10 @@
-mod camera;
-mod geometry;
-mod image;
-mod math;
-mod ray;
-mod scene;
-
 use std::sync::Arc;
 
-use geometry::sphere::Sphere;
-use math::vec3::Vec3;
-use scene::hittable_list::HittableList;
+use raytracer::geometry::sphere::Sphere;
+use raytracer::math::vec3::Vec3;
+use raytracer::scene::hittable_list::HittableList;
 
-use crate::{
+use raytracer::{
     camera::Camera,
     scene::material::{lambertian::Lambertian, metal::Metal},
 };
