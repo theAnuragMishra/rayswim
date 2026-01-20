@@ -13,12 +13,14 @@ fn main() {
     let mut world = HittableList::new();
 
     let material_ground = Arc::new(Lambertian {
-        albedo: Vec3::new(0.8, 0.8, 0.0),
+        albedo: Vec3::new(0.5, 0.5, 0.5),
     });
     let material_center = Arc::new(Lambertian {
         albedo: Vec3::new(0.8, 0.3, 0.3),
     });
-
+    let material_lambertian = Arc::new(Lambertian {
+        albedo: Vec3::new(0.5, 0.5, 0.5),
+    });
     let material_metal = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.0));
     let material_metal_fuzzy = Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3));
 
@@ -30,7 +32,7 @@ fn main() {
     world.add(Box::new(Sphere::new(
         Vec3::new(0.0, 0.0, -1.0),
         0.5,
-        material_center.clone(),
+        material_lambertian.clone(),
     )));
     world.add(Box::new(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),

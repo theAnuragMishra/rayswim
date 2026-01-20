@@ -51,7 +51,7 @@ impl Camera {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
-            max_depth: 50,
+            max_depth: 10,
             samples_per_pixel,
             pixel_samples_scale: 1.0 / samples_per_pixel as f64,
         }
