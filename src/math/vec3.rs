@@ -40,13 +40,25 @@ impl Vec3 {
         }
     }
 
+    pub fn random() -> Vec3 {
+        Self::new(
+            rand::random_range(0.0..1.0),
+            rand::random_range(0.0..1.0),
+            rand::random_range(0.0..1.0),
+        )
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        Self::new(
+            rand::random_range(min..max),
+            rand::random_range(min..max),
+            rand::random_range(min..max),
+        )
+    }
+
     pub fn random_unit_vector() -> Vec3 {
         loop {
-            let p = Vec3::new(
-                rand::random_range(-1.0..1.0),
-                rand::random_range(-1.0..1.0),
-                rand::random_range(-1.0..1.0),
-            );
+            let p = Self::random_range(-1.0, 1.0);
 
             if 1e-160 < p.length_squared() && p.length_squared() < 1.0 {
                 return p.normalized();
