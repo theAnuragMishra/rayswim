@@ -44,7 +44,7 @@ impl Vec3 {
                 rand::random_range(-1.0..1.0),
             );
 
-            if p.length_squared() < 1.0 {
+            if 1e-160 < p.length_squared() && p.length_squared() < 1.0 {
                 return p.normalized();
             }
         }
@@ -57,6 +57,10 @@ impl Vec3 {
         } else {
             -on_unit_sphere
         }
+    }
+
+    pub fn is_near_zero(&self) -> bool {
+        self.x.abs() < 1e-8 && self.y.abs() < 1e-8 && self.z.abs() < 1e-8
     }
 
     pub fn reflect(&self, n: Vec3) -> Vec3 {
