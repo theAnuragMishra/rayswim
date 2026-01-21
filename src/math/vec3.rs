@@ -66,6 +66,13 @@ impl Vec3 {
     pub fn reflect(&self, n: Vec3) -> Vec3 {
         *self - n * 2.0 * self.dot(n)
     }
+
+    pub fn refract(self, n: Vec3, ri: f64) -> Vec3 {
+        let cos_theta = f64::min((-self).dot(n), 1.0);
+        let rout_perp = ri * (self + cos_theta * n);
+        let rout_parallel = -(1.0 - rout_perp.length_squared()).abs().sqrt() * n;
+        rout_parallel + rout_perp
+    }
 }
 
 use std::ops::{Add, Div, Mul, Neg, Sub};
