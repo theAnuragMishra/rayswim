@@ -4,7 +4,7 @@ use rand;
 
 use crate::{
     image::buffer::ImageBuffer,
-    math::vec3::Vec3,
+    math::{utils::degree_to_radians, vec3::Vec3},
     ray::Ray,
     scene::hittable::{HitRecord, Hittable},
 };
@@ -17,46 +17,56 @@ pub struct Camera {
     pixel00_loc: Vec3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
-    max_depth: i32,
-    samples_per_pixel: i32,
+    pub max_depth: i32,
+    pub samples_per_pixel: i32,
     pixel_samples_scale: f64,
+    pub vfov: f64,
+    pub lookfrom: Vec3,
+    pub lookat: Vec3,
+    pub vup: Vec3,
+    v: Vec3,
+    u: Vec3,
+    w: Vec3,
 }
 
 impl Camera {
-    pub fn new(image_width: usize, aspect_ratio: f32) -> Self {
-        let center = Vec3::default();
-        let mut image_height = (image_width as f32 / aspect_ratio) as usize;
-        image_height = if image_height < 1 { 1 } else { image_height };
+    pub fn new() -> Self {
+        Camera::default()
+    }
 
-        let focal_length = 1.0;
-        let viewport_height: f64 = 2.0;
-        let viewport_width: f64 = viewport_height * (image_width / image_height) as f64;
+    pub fn initialize(&mut self) {
+        self.center = self.lookfrom;
+        self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
+        self.image_height = (self.image_width as f32 / self.aspect_ratio) as usize;
+        self.image_height = if self.image_height < 1 {
+            1
+        } else {
+            self.image_height
+        };
 
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        let focal_length = (self.lookfrom - self.lookat).length();
+        let theta = degree_to_radians(self.vfov);
+        let h = f64::tan(theta / 2.0);
+        let viewport_height: f64 = 2.0 * h * focal_length;
+        let viewport_width: f64 = viewport_height * (self.image_width / self.image_height) as f64;
 
-        let pixel_delta_u = viewport_u / image_width as f64;
-        let pixel_delta_v = viewport_v / image_height as f64;
+        self.w = (self.lookfrom - self.lookat).normalized();
+        self.u = self.vup.cross(self.w);
+        self.v = self.w.cross(self.u);
+
+        let viewport_u = viewport_width * self.u;
+        let viewport_v = viewport_height * -self.v;
+
+        self.pixel_delta_u = viewport_u / self.image_width as f64;
+        self.pixel_delta_v = viewport_v / self.image_height as f64;
 
         let viewport_upper_left =
-            center - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
-        let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
-
-        let samples_per_pixel = 100;
-        Self {
-            image_width,
-            aspect_ratio,
-            image_height,
-            center,
-            pixel00_loc,
-            pixel_delta_u,
-            pixel_delta_v,
-            max_depth: 10,
-            samples_per_pixel,
-            pixel_samples_scale: 1.0 / samples_per_pixel as f64,
-        }
+            self.center - focal_length * self.w - viewport_u / 2.0 - viewport_v / 2.0;
+        self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
     }
+
     pub fn render(&mut self, world: &dyn Hittable) {
+        self.initialize();
         let mut img = ImageBuffer::new(self.image_width, self.image_height);
         for j in 0..self.image_height {
             print!("\rScanlines remaining: {} ", self.image_height - j);
@@ -115,5 +125,29 @@ impl Camera {
         let unit = r.direction.normalized();
         let t = 0.5 * (unit.y + 1.0);
         Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self {
+            image_width: 400,
+            aspect_ratio: 2.0,
+            image_height: Default::default(),
+            center: Vec3::default(),
+            pixel00_loc: Default::default(),
+            pixel_delta_u: Default::default(),
+            pixel_delta_v: Default::default(),
+            max_depth: 10,
+            samples_per_pixel: 10,
+            pixel_samples_scale: Default::default(),
+            vfov: 90.0,
+            lookfrom: Vec3::default(),
+            lookat: Vec3::new(0.0, 0.0, -1.0),
+            vup: Vec3::new(0.0, 1.0, 0.0),
+            v: Default::default(),
+            u: Default::default(),
+            w: Default::default(),
+        }
     }
 }

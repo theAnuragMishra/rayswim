@@ -30,7 +30,7 @@ fn main() {
         material_ground.clone(),
     )));
     world.add(Box::new(Sphere::new(
-        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 0.0, -1.2),
         0.5,
         material_center.clone(),
     )));
@@ -50,6 +50,22 @@ fn main() {
         material_bubble.clone(),
     )));
 
-    let mut cam = Camera::new(400, 2.0);
+    let mut cam = Camera::new();
+    cam.image_width = 400;
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+    cam.vfov = 90.0;
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+    cam.lookfrom = Vec3 {
+        x: -2.0,
+        y: 2.0,
+        z: 1.0,
+    };
+    cam.lookat = Vec3 {
+        x: 0.0,
+        y: 0.0,
+        z: -1.0,
+    };
     cam.render(&world);
 }

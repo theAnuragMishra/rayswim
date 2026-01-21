@@ -26,6 +26,10 @@ impl Vec3 {
         self.dot(self)
     }
 
+    pub fn length(self) -> f64 {
+        self.length_squared().sqrt()
+    }
+
     pub fn normalized(self) -> Vec3 {
         let len = self.length_squared().sqrt();
         if len < 1e-12 {
