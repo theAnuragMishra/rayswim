@@ -18,8 +18,8 @@ fn main() {
         albedo: Vec3::new(0.5, 0.5, 0.5),
     });
     world.add(Box::new(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
+        Vec3::new(0.0, -1000.0, -1.0),
+        1000.0,
         material_ground.clone(),
     )));
 
@@ -76,8 +76,8 @@ fn main() {
     let mut cam = Camera::new();
     cam.image_width = 1200;
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.samples_per_pixel = 500;
-    cam.max_depth = 50;
+    cam.samples_per_pixel = 10; //500;
+    cam.max_depth = 20;
     cam.vfov = 20.0;
     cam.vup = Vec3::new(0.0, 1.0, 0.0);
     cam.lookfrom = Vec3 {

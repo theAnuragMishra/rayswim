@@ -54,7 +54,7 @@ impl Camera {
         let viewport_width: f64 = viewport_height * (self.image_width / self.image_height) as f64;
 
         self.w = (self.lookfrom - self.lookat).normalized();
-        self.u = self.vup.cross(self.w);
+        self.u = self.vup.cross(self.w).normalized();
         self.v = self.w.cross(self.u);
 
         let viewport_u = viewport_width * self.u;
@@ -147,8 +147,8 @@ impl Camera {
 impl Default for Camera {
     fn default() -> Self {
         Self {
-            image_width: 400,
-            aspect_ratio: 2.0,
+            image_width: 100,
+            aspect_ratio: 1.0,
             image_height: Default::default(),
             center: Vec3::default(),
             pixel00_loc: Default::default(),
