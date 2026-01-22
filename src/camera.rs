@@ -51,7 +51,8 @@ impl Camera {
         let theta = degree_to_radians(self.vfov);
         let h = f64::tan(theta / 2.0);
         let viewport_height: f64 = 2.0 * h * self.focus_dist;
-        let viewport_width: f64 = viewport_height * (self.image_width / self.image_height) as f64;
+        let viewport_width: f64 =
+            viewport_height * (self.image_width as f64 / self.image_height as f64);
 
         self.w = (self.lookfrom - self.lookat).normalized();
         self.u = self.vup.cross(self.w).normalized();

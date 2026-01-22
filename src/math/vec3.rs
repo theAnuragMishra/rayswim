@@ -60,7 +60,7 @@ impl Vec3 {
         loop {
             let p = Self::random_range(-1.0, 1.0);
 
-            if 1e-160 < p.length_squared() && p.length_squared() < 1.0 {
+            if 1e-160 < p.length_squared() && p.length_squared() <= 1.0 {
                 return p.normalized();
             }
         }
