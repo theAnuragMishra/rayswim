@@ -11,7 +11,7 @@ use crate::{
 
 pub struct Camera {
     pub image_width: usize,
-    pub aspect_ratio: f32,
+    pub aspect_ratio: f64,
     image_height: usize,
     center: Vec3,
     pixel00_loc: Vec3,
@@ -41,7 +41,7 @@ impl Camera {
     pub fn initialize(&mut self) {
         self.center = self.lookfrom;
         self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
-        self.image_height = (self.image_width as f32 / self.aspect_ratio) as usize;
+        self.image_height = (self.image_width as f64 / self.aspect_ratio) as usize;
         self.image_height = if self.image_height < 1 {
             1
         } else {
