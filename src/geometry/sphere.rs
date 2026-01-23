@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::math::interval::Interval;
 use crate::math::vec3::Vec3;
 use crate::ray::Ray;
 use crate::scene::hittable::{HitRecord, Hittable};
@@ -34,7 +35,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let oc = ray.origin - self.center.at(ray.time);
 
         let a = ray.direction.dot(ray.direction);
@@ -51,9 +52,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root within t_min..t_max
         let mut root = (-b - sqrt_d) / (2.0 * a);
-        if root < t_min || root > t_max {
+        if !ray_t.surrounds(root) {
             root = (-b + sqrt_d) / (2.0 * a);
-            if root < t_min || root > t_max {
+            if !ray_t.surrounds(root) {
                 return false;
             }
         }

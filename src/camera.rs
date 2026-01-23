@@ -4,7 +4,7 @@ use rand;
 
 use crate::{
     image::buffer::ImageBuffer,
-    math::{utils::degree_to_radians, vec3::Vec3},
+    math::{interval::Interval, utils::degree_to_radians, vec3::Vec3},
     ray::Ray,
     scene::hittable::{HitRecord, Hittable},
 };
@@ -125,7 +125,7 @@ impl Camera {
         }
 
         let mut rec = HitRecord::default();
-        if world.hit(r, 0.001, f64::INFINITY, &mut rec) {
+        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
             let mut scattered = Ray::default();
             let mut attenuation = Vec3::default();
             if rec

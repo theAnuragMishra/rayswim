@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::math::interval::Interval;
 use crate::math::vec3::Vec3;
 use crate::ray::Ray;
 use crate::scene::material::Material;
@@ -41,5 +42,5 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
