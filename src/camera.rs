@@ -73,7 +73,7 @@ impl Camera {
         self.defocus_disk_v = self.v * defocus_radius;
     }
 
-    pub fn render(&mut self, world: &dyn Hittable) {
+    pub fn render(&mut self, world: &dyn Hittable) -> ImageBuffer {
         self.initialize();
         let mut img = ImageBuffer::new(self.image_width, self.image_height);
         for j in 0..self.image_height {
@@ -89,8 +89,7 @@ impl Camera {
             }
         }
 
-        img.write_ppm("output.ppm");
-        print!("\rRendered output.ppm!             \n");
+        img
     }
 
     fn get_ray(&self, i: f64, j: f64) -> Ray {

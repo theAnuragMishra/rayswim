@@ -12,6 +12,10 @@ use raytracer::{
 };
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
+    let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
+
     let mut world = HittableList::new();
 
     let material_ground = Arc::new(Lambertian {
@@ -97,5 +101,8 @@ fn main() {
     };
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
-    cam.render(&world);
+    let img = cam.render(&world);
+    let path = format!("images/{}.ppm", scene_name);
+    img.write_ppm(path);
+    print!("\rRendered {}.ppm!                        \n", scene_name);
 }

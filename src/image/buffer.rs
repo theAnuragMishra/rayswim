@@ -1,6 +1,7 @@
 use crate::math::vec3::Vec3;
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 
 pub struct ImageBuffer {
     pub width: usize,
@@ -32,8 +33,8 @@ impl ImageBuffer {
         }
     }
 
-    pub fn write_ppm(&self, filename: &str) {
-        let mut file = File::create(filename).unwrap();
+    pub fn write_ppm<P: AsRef<Path>>(&self, path: P) {
+        let mut file = File::create(path).unwrap();
         write!(file, "P3\n{} {}\n255\n", self.width, self.height).unwrap();
 
         for y in 0..self.height {
