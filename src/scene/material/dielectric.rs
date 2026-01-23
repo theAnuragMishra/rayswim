@@ -38,7 +38,7 @@ impl Material for Dielectric {
         } else {
             direction = unit_direction.refract(rec.normal, ri);
         }
-        *scattered_ray = Ray::new(rec.point, direction);
+        *scattered_ray = Ray::new_with_time(rec.point, direction, ray_in.time);
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
         true
     }

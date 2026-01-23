@@ -37,7 +37,12 @@ fn main() {
                 if choose_material < 0.8 {
                     let albedo = Vec3::random() * Vec3::random();
                     sphere_material = Arc::new(Lambertian { albedo });
-                    world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.add(Box::new(Sphere::new_moving(
+                        center,
+                        center + Vec3::new(0.0, rand::random_range(0.0..0.5), 0.0),
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_material < 0.95 {
                     let albedo = Vec3::random_range(0.5, 1.0);
                     let fuzz = rand::random_range(0.0..0.5);
@@ -74,9 +79,9 @@ fn main() {
     )));
 
     let mut cam = Camera::new();
-    cam.image_width = 1200;
+    cam.image_width = 400;
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.samples_per_pixel = 10;
+    cam.samples_per_pixel = 100;
     cam.max_depth = 20;
     cam.vfov = 20.0;
     cam.vup = Vec3::new(0.0, 1.0, 0.0);
