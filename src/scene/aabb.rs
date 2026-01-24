@@ -31,11 +31,35 @@ impl Aabb {
         }
     }
 
+    pub fn empty() -> Self {
+        Self {
+            x: Interval::empty(),
+            y: Interval::empty(),
+            z: Interval::empty(),
+        }
+    }
+
+    pub fn universe() -> Self {
+        Self {
+            x: Interval::universe(),
+            y: Interval::universe(),
+            z: Interval::universe(),
+        }
+    }
+
     pub fn axis_interval(&self, n: i32) -> Interval {
         match n {
             1 => self.y,
             2 => self.z,
             _ => self.x,
+        }
+    }
+
+    pub fn longer_axis(&self) -> i32 {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() { 0 } else { 2 }
+        } else {
+            if self.y.size() > self.z.size() { 1 } else { 2 }
         }
     }
 

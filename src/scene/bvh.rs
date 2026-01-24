@@ -21,7 +21,11 @@ impl BvhNode {
         Self::from_objects(&mut list.objects)
     }
     pub fn from_objects(objects: &mut [Arc<dyn Hittable>]) -> Self {
-        let axis = rand::random_range(0..=2);
+        let mut bbox = Aabb::empty();
+        for obj in objects.iter() {
+            bbox = Aabb::enclosing(bbox, obj.bounding_box());
+        }
+        let axis = bbox.longer_axis();
 
         let comparator = match axis {
             1 => Self::box_y_compare,
@@ -50,7 +54,6 @@ impl BvhNode {
                 right = Arc::new(BvhNode::from_objects(&mut objects[mid..]));
             }
         }
-        let bbox = Aabb::enclosing(left.bounding_box(), right.bounding_box());
         Self { left, right, bbox }
     }
 
