@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::math::interval::Interval;
 use crate::math::vec3::Vec3;
 use crate::ray::Ray;
+use crate::scene::aabb::Aabb;
 use crate::scene::material::Material;
 use crate::scene::material::lambertian::Lambertian;
 
@@ -43,4 +44,5 @@ impl HitRecord {
 
 pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+    fn bounding_box(&self) -> Aabb;
 }

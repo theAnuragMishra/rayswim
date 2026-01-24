@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use raytracer::geometry::sphere::Sphere;
 use raytracer::math::vec3::Vec3;
+use raytracer::scene::bvh::BvhNode;
 use raytracer::scene::hittable_list::HittableList;
 
 use raytracer::scene::material::Material;
@@ -21,7 +22,7 @@ fn main() {
     let material_ground = Arc::new(Lambertian {
         albedo: Vec3::new(0.5, 0.5, 0.5),
     });
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, -1.0),
         1000.0,
         material_ground.clone(),
@@ -41,7 +42,7 @@ fn main() {
                 if choose_material < 0.8 {
                     let albedo = Vec3::random() * Vec3::random();
                     sphere_material = Arc::new(Lambertian { albedo });
-                    world.add(Box::new(Sphere::new_moving(
+                    world.add(Arc::new(Sphere::moving(
                         center,
                         center + Vec3::new(0.0, rand::random_range(0.0..0.5), 0.0),
                         0.2,
@@ -51,10 +52,10 @@ fn main() {
                     let albedo = Vec3::random_range(0.5, 1.0);
                     let fuzz = rand::random_range(0.0..0.5);
                     sphere_material = Arc::new(Metal::new(albedo, fuzz));
-                    world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {
                     sphere_material = Arc::new(Dielectric::new(1.5));
-                    world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                    world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                 }
             }
         }
@@ -66,21 +67,23 @@ fn main() {
     });
     let material3 = Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
     )));
+
+    world = HittableList::from_object(Arc::new(BvhNode::new(world)));
 
     let mut cam = Camera::new();
     cam.image_width = 400;

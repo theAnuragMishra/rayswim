@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::math::interval::Interval;
 use crate::math::vec3::Vec3;
 use crate::ray::Ray;
+use crate::scene::aabb::Aabb;
 use crate::scene::hittable::{HitRecord, Hittable};
 use crate::scene::material::Material;
 
@@ -10,26 +11,29 @@ pub struct Sphere {
     pub center: Ray,
     pub radius: f64,
     pub material: Arc<dyn Material>,
+    bbox: Aabb,
 }
 
 impl Sphere {
     pub fn new(static_center: Vec3, radius: f64, material: Arc<dyn Material>) -> Self {
+        let rvec = Vec3::new(radius, radius, radius);
         Self {
             center: Ray::new(static_center, Vec3::default()),
-            radius,
+            radius: radius.max(0.0),
             material,
+            bbox: Aabb::from_extrema(static_center - rvec, static_center + rvec),
         }
     }
-    pub fn new_moving(
-        center1: Vec3,
-        center2: Vec3,
-        radius: f64,
-        material: Arc<dyn Material>,
-    ) -> Self {
+    pub fn moving(center1: Vec3, center2: Vec3, radius: f64, material: Arc<dyn Material>) -> Self {
+        let center = Ray::new(center1, center2 - center1);
+        let rvec = Vec3::new(radius, radius, radius);
+        let box1 = Aabb::from_extrema(center.at(0.0) - rvec, center.at(0.0) + rvec);
+        let box2 = Aabb::from_extrema(center.at(1.0) - rvec, center.at(1.0) + rvec);
         Self {
-            center: Ray::new(center1, center2 - center1),
+            center,
             radius,
             material,
+            bbox: Aabb::enclosing(box1, box2),
         }
     }
 }
@@ -65,5 +69,9 @@ impl Hittable for Sphere {
         rec.set_face_normal(outward_normal, ray);
         rec.material = self.material.clone();
         true
+    }
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
     }
 }
