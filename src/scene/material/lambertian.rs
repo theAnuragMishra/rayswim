@@ -1,10 +1,25 @@
+use std::sync::Arc;
+
 use crate::math::vec3::Vec3;
 use crate::ray::Ray;
 use crate::scene::hittable::HitRecord;
 use crate::scene::material::Material;
+use crate::scene::texture::Texture;
+use crate::scene::texture::solid::SolidColor;
 
 pub struct Lambertian {
-    pub albedo: Vec3,
+    pub tex: Arc<dyn Texture>,
+}
+
+impl Lambertian {
+    pub fn from_color(albedo: Vec3) -> Self {
+        Self {
+            tex: Arc::new(SolidColor::new(albedo)),
+        }
+    }
+    pub fn from_texture(tex: Arc<dyn Texture>) -> Self {
+        Self { tex }
+    }
 }
 
 impl Material for Lambertian {
@@ -20,7 +35,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         *scattered = Ray::new_with_time(rec.point, scatter_direction, ray_in.time);
-        *attenuation = self.albedo;
+        *attenuation = self.tex.value(rec.u, rec.v, &rec.point);
         true
     }
 }

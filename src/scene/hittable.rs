@@ -15,6 +15,8 @@ pub struct HitRecord {
     pub t: f64, // distance along the ray
     pub front_face: bool,
     pub material: Arc<dyn Material>,
+    pub u: f64,
+    pub v: f64,
 }
 
 impl Default for HitRecord {
@@ -24,9 +26,9 @@ impl Default for HitRecord {
             normal: Vec3::default(),
             t: 0.0,
             front_face: false,
-            material: Arc::new(Lambertian {
-                albedo: Vec3::new(0.0, 0.0, 0.0),
-            }), // placeholder
+            material: Arc::new(Lambertian::from_color(Vec3::default())), // placeholder
+            u: Default::default(),
+            v: Default::default(),
         }
     }
 }

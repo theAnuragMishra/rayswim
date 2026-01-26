@@ -7,6 +7,7 @@ use raytracer::scene::hittable_list::HittableList;
 
 use raytracer::scene::material::Material;
 use raytracer::scene::material::dielectric::Dielectric;
+use raytracer::scene::texture::checkered::CheckerTexture;
 use raytracer::{
     camera::Camera,
     scene::material::{lambertian::Lambertian, metal::Metal},
@@ -19,13 +20,17 @@ fn main() {
 
     let mut world = HittableList::new();
 
-    let material_ground = Arc::new(Lambertian {
-        albedo: Vec3::new(0.5, 0.5, 0.5),
-    });
+    let checker = Arc::new(CheckerTexture::from_colors(
+        0.32,
+        Vec3::new(0.3, 0.2, 0.1),
+        Vec3::new(0.9, 0.9, 0.9),
+    ));
+
+    let material_ground = Arc::new(Lambertian::from_texture(checker));
     world.add(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, -1.0),
         1000.0,
-        material_ground.clone(),
+        material_ground,
     )));
 
     for i in -11..11 {
@@ -41,7 +46,7 @@ fn main() {
                 let sphere_material: Arc<dyn Material>;
                 if choose_material < 0.8 {
                     let albedo = Vec3::random() * Vec3::random();
-                    sphere_material = Arc::new(Lambertian { albedo });
+                    sphere_material = Arc::new(Lambertian::from_color(albedo));
                     world.add(Arc::new(Sphere::moving(
                         center,
                         center + Vec3::new(0.0, rand::random_range(0.0..0.5), 0.0),
@@ -62,9 +67,7 @@ fn main() {
     }
 
     let material1 = Arc::new(Dielectric::new(1.5));
-    let material2 = Arc::new(Lambertian {
-        albedo: Vec3::new(0.4, 0.2, 0.1),
-    });
+    let material2 = Arc::new(Lambertian::from_color(Vec3::new(0.4, 0.2, 0.1)));
     let material3 = Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
 
     world.add(Arc::new(Sphere::new(
