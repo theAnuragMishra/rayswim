@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::sync::Arc;
 
 use crate::math::interval::Interval;
@@ -36,6 +37,13 @@ impl Sphere {
             bbox: Aabb::enclosing(box1, box2),
         }
     }
+
+    pub fn get_uv(point: &Vec3) -> (f64, f64) {
+        let theta = f64::acos(-point.y);
+        let phi = f64::atan2(-point.z, point.x) + PI;
+
+        (phi / (2.0 * PI), theta / PI)
+    }
 }
 
 impl Hittable for Sphere {
@@ -67,6 +75,7 @@ impl Hittable for Sphere {
         rec.point = ray.at(rec.t);
         let outward_normal = (rec.point - self.center.at(ray.time)) / self.radius;
         rec.set_face_normal(outward_normal, ray);
+        (rec.u, rec.v) = Self::get_uv(&outward_normal);
         rec.material = self.material.clone();
         true
     }

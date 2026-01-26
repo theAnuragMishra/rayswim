@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use raytracer::geometry::sphere::Sphere;
+use raytracer::image::buffer::ImageBuffer;
 use raytracer::math::vec3::Vec3;
 use raytracer::scene::bvh::BvhNode;
 use raytracer::scene::hittable_list::HittableList;
@@ -8,6 +9,7 @@ use raytracer::scene::hittable_list::HittableList;
 use raytracer::scene::material::Material;
 use raytracer::scene::material::dielectric::Dielectric;
 use raytracer::scene::texture::checkered::CheckerTexture;
+use raytracer::scene::texture::image_texture::ImageTexture;
 use raytracer::{
     camera::Camera,
     scene::material::{lambertian::Lambertian, metal::Metal},
@@ -18,6 +20,13 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
+    let img = earth();
+    let path = format!("images/{}.ppm", scene_name);
+    img.write_ppm(path);
+    print!("\rRendered {}.ppm!                        \n", scene_name);
+}
+
+fn bouncing_spheres() -> ImageBuffer {
     let mut world = HittableList::new();
 
     let checker = Arc::new(CheckerTexture::from_colors(
@@ -107,8 +116,64 @@ fn main() {
     };
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
-    let img = cam.render(&world);
-    let path = format!("images/{}.ppm", scene_name);
-    img.write_ppm(path);
-    print!("\rRendered {}.ppm!                        \n", scene_name);
+    cam.render(&world)
+}
+
+fn checkered_spheres() -> ImageBuffer {
+    let mut world = HittableList::new();
+
+    let checkered = Arc::new(CheckerTexture::from_colors(
+        0.32,
+        Vec3::new(0.2, 0.3, 0.1),
+        Vec3::new(0.9, 0.9, 0.9),
+    ));
+
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, -10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::from_texture(checkered.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, 10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::from_texture(checkered.clone())),
+    )));
+
+    world = HittableList::from_object(Arc::new(BvhNode::new(world)));
+
+    let mut cam = Camera::new();
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    cam.lookat = Vec3::new(0.0, 0.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world)
+}
+
+fn earth() -> ImageBuffer {
+    let texture = Arc::new(ImageTexture::new("images/earthmap.jpg"));
+    let surface = Arc::new(Lambertian::from_texture(texture));
+    let globe = Arc::new(Sphere::new(Vec3::new(0.0, 0.0, 0.0), 2.0, surface));
+
+    let mut cam = Camera::new();
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Vec3::new(0.0, 0.0, 12.0);
+    cam.lookat = Vec3::new(0.0, 0.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&HittableList::from_object(globe))
 }

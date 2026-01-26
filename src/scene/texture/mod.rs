@@ -1,6 +1,7 @@
 use crate::math::vec3::Vec3;
 
 pub mod checkered;
+pub mod image_texture;
 pub mod solid;
 
 pub trait Texture: Sync + Send {
