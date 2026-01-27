@@ -20,7 +20,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = earth();
+    let img = checkered_spheres();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);

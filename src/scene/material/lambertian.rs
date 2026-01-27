@@ -23,19 +23,14 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(
-        &self,
-        ray_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
         if scatter_direction.is_near_zero() {
             scatter_direction = rec.normal;
         }
-        *scattered = Ray::new_with_time(rec.point, scatter_direction, ray_in.time);
-        *attenuation = self.tex.value(rec.u, rec.v, &rec.point);
-        true
+        Some((
+            self.tex.value(rec.u, rec.v, &rec.point),
+            Ray::new_with_time(rec.point, scatter_direction, ray_in.time),
+        ))
     }
 }

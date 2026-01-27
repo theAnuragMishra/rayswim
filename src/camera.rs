@@ -6,7 +6,7 @@ use crate::{
     image::buffer::ImageBuffer,
     math::{interval::Interval, utils::degree_to_radians, vec3::Vec3},
     ray::Ray,
-    scene::hittable::{HitRecord, Hittable},
+    scene::hittable::Hittable,
 };
 
 pub struct Camera {
@@ -124,14 +124,8 @@ impl Camera {
             return Vec3::default();
         }
 
-        let mut rec = HitRecord::default();
-        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
-            let mut scattered = Ray::default();
-            let mut attenuation = Vec3::default();
-            if rec
-                .material
-                .scatter(r, &rec, &mut attenuation, &mut scattered)
-            {
+        if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {
+            if let Some((attenuation, scattered)) = rec.material.scatter(r, &rec) {
                 return attenuation * self.color(&scattered, world, depth - 1);
             }
             return Vec3::default();

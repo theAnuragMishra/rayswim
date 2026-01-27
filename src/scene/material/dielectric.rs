@@ -20,9 +20,7 @@ impl Material for Dielectric {
         &self,
         ray_in: &crate::ray::Ray,
         rec: &crate::scene::hittable::HitRecord,
-        attenuation: &mut crate::math::vec3::Vec3,
-        scattered_ray: &mut crate::ray::Ray,
-    ) -> bool {
+    ) -> Option<(Vec3, Ray)> {
         let ri = if rec.front_face {
             1.0 / self.refractive_index
         } else {
@@ -38,8 +36,9 @@ impl Material for Dielectric {
         } else {
             direction = unit_direction.refract(rec.normal, ri);
         }
-        *scattered_ray = Ray::new_with_time(rec.point, direction, ray_in.time);
-        *attenuation = Vec3::new(1.0, 1.0, 1.0);
-        true
+        Some((
+            Vec3::new(1.0, 1.0, 1.0),
+            Ray::new_with_time(rec.point, direction, ray_in.time),
+        ))
     }
 }

@@ -47,7 +47,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let oc = ray.origin - self.center.at(ray.time);
 
         let a = ray.direction.dot(ray.direction);
@@ -57,7 +57,7 @@ impl Hittable for Sphere {
         let discriminant: f64 = b * b - 4.0 * a * c;
 
         if discriminant < 0.0 {
-            return false; // no intersection
+            return None; // no intersection
         }
 
         let sqrt_d = discriminant.sqrt();
@@ -67,17 +67,22 @@ impl Hittable for Sphere {
         if !ray_t.surrounds(root) {
             root = (-b + sqrt_d) / (2.0 * a);
             if !ray_t.surrounds(root) {
-                return false;
+                return None;
             }
         }
 
-        rec.t = root;
-        rec.point = ray.at(rec.t);
-        let outward_normal = (rec.point - self.center.at(ray.time)) / self.radius;
-        rec.set_face_normal(outward_normal, ray);
-        (rec.u, rec.v) = Self::get_uv(&outward_normal);
-        rec.material = self.material.clone();
-        true
+        let point = ray.at(root);
+        let outward_normal = (point - self.center.at(ray.time)) / self.radius;
+        let (u, v) = Self::get_uv(&outward_normal);
+        Some(HitRecord::new(
+            point,
+            outward_normal,
+            root,
+            self.material.clone(),
+            u,
+            v,
+            ray,
+        ))
     }
 
     fn bounding_box(&self) -> Aabb {

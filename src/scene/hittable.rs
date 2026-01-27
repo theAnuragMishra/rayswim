@@ -19,6 +19,34 @@ pub struct HitRecord {
     pub v: f64,
 }
 
+impl HitRecord {
+    pub fn new(
+        point: Vec3,
+        outward_normal: Vec3,
+        t: f64,
+        material: Arc<dyn Material>,
+        u: f64,
+        v: f64,
+        ray: &Ray,
+    ) -> Self {
+        let front_face = ray.direction.dot(outward_normal) < 0.0;
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
+        Self {
+            point,
+            normal,
+            t,
+            front_face,
+            material,
+            u,
+            v,
+        }
+    }
+}
+
 impl Default for HitRecord {
     fn default() -> Self {
         Self {
@@ -33,18 +61,7 @@ impl Default for HitRecord {
     }
 }
 
-impl HitRecord {
-    pub fn set_face_normal(&mut self, outward_normal: Vec3, ray: &Ray) {
-        self.front_face = ray.direction.dot(outward_normal) < 0.0;
-        self.normal = if self.front_face {
-            outward_normal
-        } else {
-            -outward_normal
-        };
-    }
-}
-
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord>;
     fn bounding_box(&self) -> Aabb;
 }
