@@ -10,6 +10,7 @@ use raytracer::scene::material::Material;
 use raytracer::scene::material::dielectric::Dielectric;
 use raytracer::scene::texture::checkered::CheckerTexture;
 use raytracer::scene::texture::image_texture::ImageTexture;
+use raytracer::scene::texture::perlin::NoiseTexture;
 use raytracer::{
     camera::Camera,
     scene::material::{lambertian::Lambertian, metal::Metal},
@@ -20,7 +21,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = checkered_spheres();
+    let img = perlin_spheres();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);
@@ -176,4 +177,126 @@ fn earth() -> ImageBuffer {
     cam.defocus_angle = 0.0;
 
     cam.render(&HittableList::from_object(globe))
+}
+
+fn changed_pov() -> ImageBuffer {
+    let mut world = HittableList::new();
+
+    let material_ground = Arc::new(Lambertian::from_color(Vec3::new(0.5, 0.5, 0.5)));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, -1.0),
+        1000.0,
+        material_ground,
+    )));
+    for i in -11..11 {
+        for j in -11..11 {
+            let choose_material = rand::random_range(0.0..1.0);
+            let center = Vec3::new(
+                i as f64 + 0.9 * rand::random_range(0.0..1.0),
+                0.2,
+                j as f64 + 0.9 * rand::random_range(0.0..1.0),
+            );
+
+            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let sphere_material: Arc<dyn Material>;
+                if choose_material < 0.8 {
+                    let albedo = Vec3::random() * Vec3::random();
+                    sphere_material = Arc::new(Lambertian::from_color(albedo));
+                    world.add(Arc::new(Sphere::new(
+                        center,
+                        rand::random_range(0.2..0.5),
+                        sphere_material,
+                    )));
+                } else if choose_material < 0.95 {
+                    let albedo = Vec3::random_range(0.5, 1.0);
+                    let fuzz = rand::random_range(0.0..0.5);
+                    sphere_material = Arc::new(Metal::new(albedo, fuzz));
+                    world.add(Arc::new(Sphere::new(
+                        center,
+                        rand::random_range(0.2..0.5),
+                        sphere_material,
+                    )));
+                } else {
+                    sphere_material = Arc::new(Dielectric::new(1.5));
+                    world.add(Arc::new(Sphere::new(
+                        center,
+                        rand::random_range(0.2..0.5),
+                        sphere_material,
+                    )));
+                }
+            }
+        }
+    }
+
+    let material1 = Arc::new(Dielectric::new(1.5));
+    let material2 = Arc::new(Lambertian::from_color(Vec3::new(0.2, 0.7, 0.3)));
+    let material3 = Arc::new(Metal::new(Vec3::new(0.6, 0.3, 0.5), 0.0));
+
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        1.0,
+        material1,
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(-4.0, 1.0, 0.0),
+        1.0,
+        material2,
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(4.0, 1.0, 0.0),
+        1.0,
+        material3,
+    )));
+
+    world = HittableList::from_object(Arc::new(BvhNode::new(world)));
+    let mut cam = Camera::new();
+    cam.image_width = 1200;
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.samples_per_pixel = 10;
+    cam.max_depth = 20;
+    cam.vfov = 20.0;
+    cam.vup = Vec3::new(0.0, 0.0, -1.0);
+    cam.lookfrom = Vec3 {
+        x: 0.0,
+        y: 20.0,
+        z: 0.0,
+    };
+    cam.lookat = Vec3 {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
+    cam.defocus_angle = 0.6;
+    cam.focus_dist = 10.0;
+    cam.render(&world)
+}
+
+fn perlin_spheres() -> ImageBuffer {
+    let mut world = HittableList::new();
+    let per_tex = Arc::new(NoiseTexture::new());
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::from_texture(per_tex.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::from_texture(per_tex.clone())),
+    )));
+
+    let mut cam = Camera::new();
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    cam.lookat = Vec3::new(0.0, 0.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world)
 }
