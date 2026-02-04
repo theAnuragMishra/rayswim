@@ -80,6 +80,18 @@ impl<const N: usize> Perlin<N> {
         });
         Self::perlin_interp(c, u, v, w)
     }
+
+    pub fn turb(&self, mut p: Vec3, depth: i32) -> f64 {
+        let mut accum = 0.0;
+        let mut weight = 1.0;
+
+        for _ in 0..depth {
+            accum += weight * self.noise(p);
+            weight *= 0.5;
+            p = p * 2.0;
+        }
+        accum.abs()
+    }
 }
 
 pub struct NoiseTexture {
@@ -98,6 +110,6 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, point: Vec3) -> Vec3 {
-        Vec3::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + self.noise.noise(self.scale * point))
+        Vec3::new(1.0, 1.0, 1.0) * self.noise.turb(point, 7)
     }
 }
