@@ -32,7 +32,7 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn value(&self, mut u: f64, mut v: f64, _: &Vec3) -> Vec3 {
+    fn value(&self, mut u: f64, mut v: f64, _: Vec3) -> Vec3 {
         if self.height <= 0 {
             return Vec3::new(0.0, 1.0, 1.0);
         }

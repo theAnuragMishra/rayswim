@@ -59,7 +59,7 @@ impl<const N: usize> Perlin<N> {
         return accum;
     }
 
-    pub fn noise(&self, point: &Vec3) -> f64 {
+    pub fn noise(&self, point: Vec3) -> f64 {
         let mut u = point.x - point.x.floor();
         let mut v = point.y - point.y.floor();
         let mut w = point.z - point.z.floor();
@@ -89,18 +89,20 @@ impl<const N: usize> Perlin<N> {
 
 pub struct NoiseTexture {
     noise: Perlin<256>,
+    scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
+    pub fn new(scale: f64) -> Self {
         Self {
             noise: Perlin::new(),
+            scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
-    fn value(&self, _u: f64, _v: f64, point: &Vec3) -> Vec3 {
-        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(point)
+    fn value(&self, _u: f64, _v: f64, point: Vec3) -> Vec3 {
+        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(self.scale * point)
     }
 }

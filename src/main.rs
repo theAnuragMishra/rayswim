@@ -273,7 +273,7 @@ fn changed_pov() -> ImageBuffer {
 
 fn perlin_spheres() -> ImageBuffer {
     let mut world = HittableList::new();
-    let per_tex = Arc::new(NoiseTexture::new());
+    let per_tex = Arc::new(NoiseTexture::new(4.0));
     world.add(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,

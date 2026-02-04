@@ -17,7 +17,7 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _point: &Vec3) -> Vec3 {
+    fn value(&self, _u: f64, _v: f64, _point: Vec3) -> Vec3 {
         self.albedo
     }
 }

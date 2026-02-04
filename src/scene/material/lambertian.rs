@@ -29,7 +29,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         Some((
-            self.tex.value(rec.u, rec.v, &rec.point),
+            self.tex.value(rec.u, rec.v, rec.point),
             Ray::new_with_time(rec.point, scatter_direction, ray_in.time),
         ))
     }

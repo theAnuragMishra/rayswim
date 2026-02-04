@@ -30,7 +30,7 @@ impl CheckerTexture {
 }
 
 impl Texture for CheckerTexture {
-    fn value(&self, u: f64, v: f64, point: &Vec3) -> Vec3 {
+    fn value(&self, u: f64, v: f64, point: Vec3) -> Vec3 {
         let x_int = (self.inv_scale * point.x).floor();
         let y_int = (self.inv_scale * point.y).floor();
         let z_int = (self.inv_scale * point.z).floor();
