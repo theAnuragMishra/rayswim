@@ -1,7 +1,7 @@
 use crate::{math::vec3::Vec3, scene::texture::Texture};
 
 pub struct Perlin<const N: usize> {
-    randfloat: [f64; N],
+    randvec: [Vec3; N],
     perm_x: [usize; N],
     perm_y: [usize; N],
     perm_z: [usize; N],
@@ -9,10 +9,7 @@ pub struct Perlin<const N: usize> {
 
 impl<const N: usize> Perlin<N> {
     pub fn new() -> Self {
-        let mut randfloat = [0.0; N];
-        randfloat
-            .iter_mut()
-            .for_each(|x| *x = rand::random_range(0.0..1.0));
+        let randvec: [Vec3; N] = std::array::from_fn(|_| Vec3::random_unit_vector());
 
         let mut perm_x = [0; N];
         let mut perm_y = [0; N];
@@ -23,7 +20,7 @@ impl<const N: usize> Perlin<N> {
         Self::generate_perm(&mut perm_z);
 
         Self {
-            randfloat,
+            randvec,
             perm_x,
             perm_y,
             perm_z,
@@ -43,47 +40,45 @@ impl<const N: usize> Perlin<N> {
         }
     }
 
-    pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    pub fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+        let uu = u * u * (3.0 - 2.0 * u);
+        let vv = v * v * (3.0 - 2.0 * v);
+        let ww = w * w * (3.0 - 2.0 * w);
         let mut accum = 0.0;
+
         for i in 0..2 {
             for j in 0..2 {
                 for k in 0..2 {
-                    accum += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
-                        * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
-                        * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
-                        * c[i][j][k];
+                    let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
+                    accum += ((i as f64 * uu) + (1 - i) as f64 * (1.0 - uu))
+                        * (j as f64 * vv + (1 - j) as f64 * (1.0 - vv))
+                        * (k as f64 * ww + (1 - k) as f64 * (1.0 - ww))
+                        * c[i][j][k].dot(weight_v);
                 }
             }
         }
-
-        return accum;
+        accum
     }
 
     pub fn noise(&self, point: Vec3) -> f64 {
-        let mut u = point.x - point.x.floor();
-        let mut v = point.y - point.y.floor();
-        let mut w = point.z - point.z.floor();
-
-        u = u * u * (3.0 - 2.0 * u);
-        v = v * v * (3.0 - 2.0 * v);
-        w = w * w * (3.0 - 2.0 * w);
+        let u = point.x - point.x.floor();
+        let v = point.y - point.y.floor();
+        let w = point.z - point.z.floor();
 
         let i = point.x.floor() as i32;
         let j = point.y.floor() as i32;
         let k = point.z.floor() as i32;
 
-        let mut c = [[[0.0; 2]; 2]; 2];
-
-        for di in 0..2 {
-            for dj in 0..2 {
-                for dk in 0..2 {
-                    c[di][dj][dk] = self.randfloat[self.perm_x[((i + di as i32) & 255) as usize]
+        let c: [[[Vec3; 2]; 2]; 2] = std::array::from_fn(|di| {
+            std::array::from_fn(|dj| {
+                std::array::from_fn(|dk| {
+                    self.randvec[self.perm_x[((i + di as i32) & 255) as usize]
                         ^ self.perm_y[((j + dj as i32) & 255) as usize]
-                        ^ self.perm_z[((k + dk as i32) & 255) as usize]];
-                }
-            }
-        }
-        Self::trilinear_interp(c, u, v, w)
+                        ^ self.perm_z[((k + dk as i32) & 255) as usize]]
+                })
+            })
+        });
+        Self::perlin_interp(c, u, v, w)
     }
 }
 
@@ -103,6 +98,6 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, point: Vec3) -> Vec3 {
-        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(self.scale * point)
+        Vec3::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + self.noise.noise(self.scale * point))
     }
 }
