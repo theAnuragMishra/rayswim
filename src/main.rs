@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use raytracer::geometry::quad::Quad;
 use raytracer::geometry::sphere::Sphere;
 use raytracer::image::buffer::ImageBuffer;
 use raytracer::math::vec3::Vec3;
@@ -21,7 +22,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = perlin_spheres();
+    let img = quads();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);
@@ -418,5 +419,65 @@ fn earth_and_moon() -> ImageBuffer {
     };
     cam.defocus_angle = 0.6;
     cam.focus_dist = 2000.0;
+    cam.render(&world)
+}
+
+fn quads() -> ImageBuffer {
+    let mut world = HittableList::new();
+    let left_red = Arc::new(Lambertian::from_color(Vec3::new(1.0, 0.2, 0.2)));
+    let back_green = Arc::new(Lambertian::from_color(Vec3::new(0.2, 1.0, 0.2)));
+    let right_blue = Arc::new(Lambertian::from_color(Vec3::new(0.2, 0.2, 1.0)));
+    let upper_orange = Arc::new(Lambertian::from_color(Vec3::new(1.0, 0.5, 0.0)));
+    let lower_teal = Arc::new(Lambertian::from_color(Vec3::new(0.2, 0.8, 0.8)));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(-3.0, -2.0, 5.0),
+        Vec3::new(0.0, 0.0, -4.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        left_red,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(-2.0, -2.0, 0.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        back_green,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(3.0, -2.0, 1.0),
+        Vec3::new(0.0, 0.0, 4.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        right_blue,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(-2.0, 3.0, 1.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 4.0),
+        upper_orange,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(-2.0, -3.0, 5.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -4.0),
+        lower_teal,
+    )));
+
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 80.0;
+    cam.lookfrom = Vec3::new(0.0, 0.0, 9.0);
+    cam.lookat = Vec3::new(0.0, 0.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
     cam.render(&world)
 }

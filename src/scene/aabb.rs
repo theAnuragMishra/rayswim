@@ -12,15 +12,19 @@ pub struct Aabb {
 
 impl Aabb {
     pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
-        Self { x, y, z }
+        let mut new = Self { x, y, z };
+        new.pad_to_minimums();
+        new
     }
 
     pub fn from_extrema(a: Vec3, b: Vec3) -> Self {
-        Self {
+        let mut new = Self {
             x: Interval::new(a.x.min(b.x), a.x.max(b.x)),
             y: Interval::new(a.y.min(b.y), a.y.max(b.y)),
             z: Interval::new(a.z.min(b.z), a.z.max(b.z)),
-        }
+        };
+        new.pad_to_minimums();
+        new
     }
 
     pub fn enclosing(box1: Self, box2: Self) -> Self {
@@ -60,6 +64,19 @@ impl Aabb {
             if self.x.size() > self.z.size() { 0 } else { 2 }
         } else {
             if self.y.size() > self.z.size() { 1 } else { 2 }
+        }
+    }
+
+    pub fn pad_to_minimums(&mut self) {
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
         }
     }
 
