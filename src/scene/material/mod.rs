@@ -1,4 +1,5 @@
 pub mod dielectric;
+pub mod diffuse_light;
 pub mod lambertian;
 pub mod metal;
 
@@ -7,5 +8,10 @@ use crate::ray::Ray;
 use crate::scene::hittable::HitRecord;
 
 pub trait Material: Sync + Send {
-    fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)>;
+    fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
+        None
+    }
+    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
+        Vec3::default()
+    }
 }

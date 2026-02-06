@@ -31,6 +31,7 @@ pub struct Camera {
     pub focus_dist: f64,
     defocus_disk_u: Vec3,
     defocus_disk_v: Vec3,
+    pub background: Vec3,
 }
 
 impl Camera {
@@ -125,16 +126,16 @@ impl Camera {
         }
 
         if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {
+            let color_from_emission = rec.material.emitted(rec.u, rec.v, rec.point);
             if let Some((attenuation, scattered)) = rec.material.scatter(r, &rec) {
-                return attenuation * self.color(&scattered, world, depth - 1);
+                return color_from_emission
+                    + attenuation * self.color(&scattered, world, depth - 1);
             }
-            return Vec3::default();
+            return color_from_emission;
         }
 
         // background
-        let unit = r.direction.normalized();
-        let t = 0.5 * (unit.y + 1.0);
-        Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+        self.background
     }
 }
 
@@ -162,6 +163,7 @@ impl Default for Camera {
             focus_dist: 10.0,
             defocus_disk_u: Default::default(),
             defocus_disk_v: Default::default(),
+            background: Vec3::default(),
         }
     }
 }

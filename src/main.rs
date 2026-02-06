@@ -9,6 +9,7 @@ use raytracer::scene::hittable_list::HittableList;
 
 use raytracer::scene::material::Material;
 use raytracer::scene::material::dielectric::Dielectric;
+use raytracer::scene::material::diffuse_light::DiffuseLight;
 use raytracer::scene::texture::checkered::CheckerTexture;
 use raytracer::scene::texture::image_texture::ImageTexture;
 use raytracer::scene::texture::perlin::NoiseTexture;
@@ -22,7 +23,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = quads();
+    let img = simple_light();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);
@@ -118,6 +119,7 @@ fn bouncing_spheres() -> ImageBuffer {
     };
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.render(&world)
 }
 
@@ -156,6 +158,7 @@ fn checkered_spheres() -> ImageBuffer {
 
     cam.defocus_angle = 0.0;
 
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.render(&world)
 }
 
@@ -177,6 +180,7 @@ fn earth() -> ImageBuffer {
 
     cam.defocus_angle = 0.0;
 
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.render(&HittableList::from_object(globe))
 }
 
@@ -268,6 +272,7 @@ fn changed_pov() -> ImageBuffer {
         z: 0.0,
     };
     cam.defocus_angle = 0.6;
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.focus_dist = 10.0;
     cam.render(&world)
 }
@@ -298,6 +303,7 @@ fn perlin_spheres() -> ImageBuffer {
     cam.vup = Vec3::new(0.0, 1.0, 0.0);
 
     cam.defocus_angle = 0.0;
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
 
     cam.render(&world)
 }
@@ -381,6 +387,7 @@ fn a_final_render() -> ImageBuffer {
     };
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.render(&world)
 }
 
@@ -418,6 +425,7 @@ fn earth_and_moon() -> ImageBuffer {
         z: 0.0,
     };
     cam.defocus_angle = 0.6;
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
     cam.focus_dist = 2000.0;
     cam.render(&world)
 }
@@ -475,6 +483,51 @@ fn quads() -> ImageBuffer {
     cam.vfov = 80.0;
     cam.lookfrom = Vec3::new(0.0, 0.0, 9.0);
     cam.lookat = Vec3::new(0.0, 0.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.background = Vec3::new(0.7, 0.8, 1.0);
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world)
+}
+
+fn simple_light() -> ImageBuffer {
+    let mut world = HittableList::new();
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::from_texture(pertext.clone())),
+    )));
+
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::from_texture(pertext)),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::color_source(Vec3::new(4.0, 4.0, 4.0)));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(3.0, 1.0, -2.0),
+        Vec3::new(2.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        difflight,
+    )));
+
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+    cam.background = Vec3::new(0.0, 0.0, 0.0);
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Vec3::new(26.0, 3.0, 6.0);
+    cam.lookat = Vec3::new(0.0, 2.0, 0.0);
     cam.vup = Vec3::new(0.0, 1.0, 0.0);
 
     cam.defocus_angle = 0.0;
