@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use raytracer::geometry::quad::Quad;
+use raytracer::geometry::quad::{Quad, dabba};
 use raytracer::geometry::sphere::Sphere;
 use raytracer::image::buffer::ImageBuffer;
 use raytracer::math::vec3::Vec3;
@@ -582,8 +582,19 @@ fn cornell_box() -> ImageBuffer {
         Vec3::new(0.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
-        white,
+        white.clone(),
     )));
+
+    world.add(dabba(
+        Vec3::new(130.0, 0.0, 65.0),
+        Vec3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    ));
+    world.add(dabba(
+        Vec3::new(260.0, 0.0, 295.0),
+        Vec3::new(430.0, 330.0, 460.0),
+        white.clone(),
+    ));
 
     let mut cam = Camera::new();
 
