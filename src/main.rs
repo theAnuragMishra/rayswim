@@ -5,11 +5,13 @@ use raytracer::geometry::sphere::Sphere;
 use raytracer::image::buffer::ImageBuffer;
 use raytracer::math::vec3::Vec3;
 use raytracer::scene::bvh::BvhNode;
+use raytracer::scene::hittable::Hittable;
 use raytracer::scene::hittable_list::HittableList;
 
 use raytracer::scene::material::Material;
 use raytracer::scene::material::dielectric::Dielectric;
 use raytracer::scene::material::diffuse_light::DiffuseLight;
+use raytracer::scene::movement::{RotateY, Translate};
 use raytracer::scene::texture::checkered::CheckerTexture;
 use raytracer::scene::texture::image_texture::ImageTexture;
 use raytracer::scene::texture::perlin::NoiseTexture;
@@ -585,16 +587,27 @@ fn cornell_box() -> ImageBuffer {
         white.clone(),
     )));
 
-    world.add(dabba(
-        Vec3::new(130.0, 0.0, 65.0),
-        Vec3::new(295.0, 165.0, 230.0),
+    let mut box1: Arc<dyn Hittable> = dabba(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(165.0, 330.0, 165.0),
         white.clone(),
-    ));
-    world.add(dabba(
-        Vec3::new(260.0, 0.0, 295.0),
-        Vec3::new(430.0, 330.0, 460.0),
-        white.clone(),
-    ));
+    );
+
+    box1 = Arc::new(RotateY::new(box1, 15.0));
+    box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+
+    world.add(box1);
+
+    let mut box2: Arc<dyn Hittable> = dabba(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(165.0, 165.0, 165.0),
+        white,
+    );
+
+    box2 = Arc::new(RotateY::new(box2, -18.0));
+    box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+
+    world.add(box2);
 
     let mut cam = Camera::new();
 
