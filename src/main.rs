@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
+use rand::random_range;
 use raytracer::geometry::quad::{Quad, dabba};
 use raytracer::geometry::sphere::Sphere;
 use raytracer::image::buffer::ImageBuffer;
 use raytracer::math::vec3::Vec3;
 use raytracer::scene::bvh::BvhNode;
+use raytracer::scene::constant_medium::ConstantMedium;
 use raytracer::scene::hittable::Hittable;
 use raytracer::scene::hittable_list::HittableList;
 
@@ -25,7 +27,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = cornell_box();
+    let img = cornell_smoke();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);
@@ -609,6 +611,106 @@ fn cornell_box() -> ImageBuffer {
 
     world.add(box2);
 
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 600;
+    cam.samples_per_pixel = 200;
+    cam.max_depth = 50;
+    cam.background = Vec3::new(0.0, 0.0, 0.0);
+
+    cam.vfov = 40.0;
+    cam.lookfrom = Vec3::new(278.0, 278.0, -800.0);
+    cam.lookat = Vec3::new(278.0, 278.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world)
+}
+
+fn cornell_smoke() -> ImageBuffer {
+    let mut world = HittableList::new();
+
+    let red = Arc::new(Lambertian::from_color(Vec3::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::from_color(Vec3::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::from_color(Vec3::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::color_source(Vec3::new(7.0, 7.0, 7.0)));
+
+    // Walls + light
+    world.add(Arc::new(Quad::new(
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(113.0, 554.0, 127.0),
+        Vec3::new(330.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 305.0),
+        light,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white.clone(),
+    )));
+
+    // Boxes
+    let mut box1: Arc<dyn Hittable> = dabba(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    );
+    box1 = Arc::new(RotateY::new(box1, 15.0));
+    box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+
+    let mut box2: Arc<dyn Hittable> = dabba(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(165.0, 165.0, 165.0),
+        white,
+    );
+    box2 = Arc::new(RotateY::new(box2, -18.0));
+    box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+
+    // Smoke volumes
+    world.add(Arc::new(ConstantMedium::from_color(
+        box1,
+        0.01,
+        Vec3::new(0.0, 0.0, 0.0),
+    )));
+
+    world.add(Arc::new(ConstantMedium::from_color(
+        box2,
+        0.01,
+        Vec3::new(1.0, 1.0, 1.0),
+    )));
+
+    // Camera
     let mut cam = Camera::new();
 
     cam.aspect_ratio = 1.0;
