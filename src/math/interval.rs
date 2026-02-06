@@ -1,4 +1,4 @@
-use std::f64;
+use std::{f64, ops::Add};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Interval {
@@ -57,5 +57,19 @@ impl Interval {
 impl Default for Interval {
     fn default() -> Self {
         Self::empty()
+    }
+}
+
+impl Add<f64> for Interval {
+    type Output = Interval;
+    fn add(self, rhs: f64) -> Self::Output {
+        Interval::new(self.min + rhs, self.max + rhs)
+    }
+}
+
+impl Add<Interval> for f64 {
+    type Output = Interval;
+    fn add(self, rhs: Interval) -> Self::Output {
+        rhs + self
     }
 }
