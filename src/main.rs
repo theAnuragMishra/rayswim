@@ -23,7 +23,7 @@ fn main() {
 
     let scene_name = args.get(1).map(|x| x.as_str()).unwrap_or("output");
 
-    let img = simple_light();
+    let img = cornell_box();
     let path = format!("images/{}.ppm", scene_name);
     img.write_ppm(path);
     print!("\rRendered {}.ppm!                        \n", scene_name);
@@ -528,6 +528,74 @@ fn simple_light() -> ImageBuffer {
     cam.vfov = 20.0;
     cam.lookfrom = Vec3::new(26.0, 3.0, 6.0);
     cam.lookat = Vec3::new(0.0, 2.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world)
+}
+
+fn cornell_box() -> ImageBuffer {
+    let mut world = HittableList::new();
+
+    let red = Arc::new(Lambertian::from_color(Vec3::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::from_color(Vec3::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::from_color(Vec3::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::color_source(Vec3::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        light,
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+    )));
+
+    world.add(Arc::new(Quad::new(
+        Vec3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white,
+    )));
+
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 600;
+    cam.samples_per_pixel = 200;
+    cam.max_depth = 50;
+    cam.background = Vec3::new(0.0, 0.0, 0.0);
+
+    cam.vfov = 40.0;
+    cam.lookfrom = Vec3::new(278.0, 278.0, -800.0);
+    cam.lookat = Vec3::new(278.0, 278.0, 0.0);
     cam.vup = Vec3::new(0.0, 1.0, 0.0);
 
     cam.defocus_angle = 0.0;
