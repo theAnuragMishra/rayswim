@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::io::{self, Write};
 
 use rand;
@@ -77,19 +78,20 @@ impl Camera {
     pub fn render(&mut self, world: &dyn Hittable) -> ImageBuffer {
         self.initialize();
         let mut img = ImageBuffer::new(self.image_width, self.image_height);
-        for j in 0..self.image_height {
-            print!("\rScanlines remaining: {} ", self.image_height - j);
-            io::stdout().flush().unwrap();
-            for i in 0..self.image_width {
+
+        img.pixels
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(idx, pixel)| {
+                let i = idx % self.image_width;
+                let j = idx / self.image_width;
                 let mut pixel_color = Vec3::default();
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i as f64, j as f64);
                     pixel_color = pixel_color + self.color(&r, world, self.max_depth);
                 }
-                img.set_pixel(i, j, pixel_color * self.pixel_samples_scale);
-            }
-        }
-
+                *pixel = pixel_color * self.pixel_samples_scale;
+            });
         img
     }
 
